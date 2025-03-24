@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TodoInput from "./components/TodoInput";
 import TodoList from "./components/TodoList";
 
@@ -6,20 +6,34 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [todoValue, setTodoValue] = useState("");
 
+  function persistData(newList) {
+    localStorage.setItem("todos", JSON.stringify({ todos: newList }));
+  }
+
   function handleAddTodos(newTodo) {
-    setTodos([...todos, newTodo]);
+    const newTodoList = [...todos, newTodo];
+    setTodos(newTodoList);
+    persistData(newTodoList);
   }
 
   function handleDeleteTodo(index) {
     const newTodoList = todos.filter((_, todoIndex) => todoIndex !== index);
     setTodos(newTodoList);
+    persistData(newTodoList);
   }
 
   function handleEditTodo(index) {
     const valueToBeEdited = todos[index];
-    setTodoValue(valueToBeEdited);  // Сначала устанавливаем значение в инпут
-    setTodos(todos.filter((_, todoIndex) => todoIndex !== index));  // Потом удаляем задачу
+    setTodoValue(valueToBeEdited);
+    handleDeleteTodo(index);
   }
+
+  useEffect(() => {
+    const localTodos = localStorage.getItem("todos");
+    if (localTodos) {
+      setTodos(JSON.parse(localTodos).todos);
+    }
+  }, []);
 
   return (
     <>
